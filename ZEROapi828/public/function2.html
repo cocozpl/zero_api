@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Compatible Parts</title>
+</head>
+<body>
+    <h1>Get Compatible Parts</h1>
+
+    <!-- Form to collect platform and platform_id input -->
+    <form id="searchForm" action="/getCompatibleParts" method="POST">
+        <label for="platform">Platform (required):</label>
+        <input type="text" id="platform" name="platform" required><br><br>
+
+        <label for="platform_id">Platform IDs (required):</label><br>
+        <textarea id="platform_id" name="platform_id" rows="5" cols="30" placeholder="Enter one or more platform IDs, one per line" required></textarea><br><br>
+
+        <button type="submit">Search</button>
+    </form>
+
+    <h2>Search Results</h2>
+    <!-- Table to display the search results -->
+    <table border="1" id="resultsTable">
+        <thead>
+            <tr>
+                <th>Platform ID</th>
+                <th>Timestamp</th>
+                <th>Compatibility</th>
+            </tr>
+        </thead>
+        <tbody id="resultsBody">
+            <!-- Results will be dynamically inserted here -->
+        </tbody>
+    </table>
+
+    <script>
+        // Handle the form submission and render the results table
+        document.getElementById('searchForm').onsubmit = async function (event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            const platform = document.getElementById('platform').value;
+            const platform_id = document.getElementById('platform_id').value.split('\n').map(id => id.trim()).filter(id => id); // Split platform IDs by line and trim whitespace
+
+            const data = {
+                platform,
+                platform_id: platform_id.length === 1 ? platform_id[0] : platform_id // Send as array if multiple IDs, string if single
+            };
+
+            // Send a POST request to the server with the form data
+            const response = await fetch('/getCompatibleParts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            // Get the JSON response
+            const result = await response.json();
+
+            // Render the results in the table
+            const resultsBody = document.getElementById('resultsBody');
+            resultsBody.innerHTML = ''; // Clear previous results
+
+            result.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.platform_id}</td>
+                    <td>${item.timestamp}</td>
+                    <td>${item.compatibility.join(', ')}</td>
+                `;
+                resultsBody.appendChild(row);
+            });
+        };
+    </script>
+</body>
+</html>
