@@ -54,13 +54,24 @@
             // Convert historical to boolean
             // data.historical = data.historical === 'true';
 
+             // Only include the fields the API expects, and send 'None' for missing fields
+            const requestData = {
+                platform: data.platform,        // platform is required
+                category: data.category,        // category is required
+                platform_id: data.platform_id,  // Platform ID is required
+                brand: data.brand || null,      // If brand is not provided, send null
+                item_name: data.item_name || null, // If item_name is not provided, send null
+                model: data.model || null,      // If model is not provided, send null
+                historical: data.historical === 'true'  // Convert historical to boolean
+            };
+
             // Send POST request to the server
             const response = await fetch('/getSalesRanking', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify(requestData),  // Send the filtered data
             });
 
             const result = await response.json();
